@@ -34,6 +34,50 @@ llm = None
 llm = create_llm_google_genai()
 
 
+def clean_post_content(content: str) -> str:
+    """Clean up LLM output to remove explanatory text and return only the post content."""
+    lines = content.strip().split("\n")
+
+    # Remove common explanatory prefixes
+    unwanted_prefixes = [
+        "here's a linkedin post",
+        "here is a linkedin post",
+        "linkedin post:",
+        "post:",
+        "here's the post",
+        "here is the post",
+        "generated post:",
+        "the post:",
+        "below is",
+        "here's what i",
+    ]
+
+    cleaned_lines = []
+    for line in lines:
+        line_lower = line.strip().lower()
+
+        # Skip lines that are clearly explanatory
+        if any(prefix in line_lower for prefix in unwanted_prefixes):
+            continue
+
+        # Skip lines that end with colons (likely headers)
+        if line.strip().endswith(":") and len(line.strip()) < 50:
+            continue
+
+        cleaned_lines.append(line)
+
+    # Join back and clean up extra whitespace
+    result = "\n".join(cleaned_lines).strip()
+
+    # Remove any remaining quotes around the entire content
+    if result.startswith('"') and result.endswith('"'):
+        result = result[1:-1]
+    if result.startswith("'") and result.endswith("'"):
+        result = result[1:-1]
+
+    return result
+
+
 async def call_llm(messages: List[BaseMessage] | str) -> str:
     """
     Robust wrapper to call the LLM. Accepts either a plain prompt string or a list of BaseMessage.
@@ -262,10 +306,12 @@ async def draft_posts_node(state: AgentState) -> AgentState:
                 f"\nProject: {gp.get('project_name')} - {gp.get('description')}\n"
             )
 
-        prompt = f"Write a LinkedIn post ({length_guidance}) about {req.topic}. Tone: {req.tone or 'Professional'}.\
-              Audience: {req.audience or 'General'}. Use {emoji_guidance}. {github_ctx}"
+        prompt = f"Generate ONLY the LinkedIn post content ({length_guidance}) about {req.topic}. Tone: {req.tone or 'Professional'}. Audience: {req.audience or 'General'}. Use {emoji_guidance}. {github_ctx}\n\nIMPORTANT: Return ONLY the post text without any explanatory lines, introductions, or meta-commentary. Do not include lines like 'Here's a LinkedIn post about...' or similar. Just return the actual post content that would be posted directly to LinkedIn."
         content = await call_llm(prompt)
-        posts.append(content)
+
+        # Clean up any unwanted explanatory text
+        cleaned_content = clean_post_content(content)
+        posts.append(cleaned_content)
 
     state["drafted_posts"] = posts
     state["current_step_message"] = "Drafts created."
