@@ -2,6 +2,7 @@ import { useCallback, useState, useRef } from "react";
 import "./index.css";
 import { PostInputForm } from "./components/PostInputForm";
 import { PostCard } from "./components/PostCard";
+import { Loader } from "./components/Loader";
 import type {
 	PostGenerationRequest,
 	GeneratedPost,
@@ -105,56 +106,61 @@ function App() {
 		setIsLoading(false);
 	};
 
-	return (
-		<div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 p-6">
-			<div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-				{/* Left Panel */}
-				<div className="lg:col-span-1">
-					<h1 className="text-3xl font-extrabold mb-6 text-gray-900">
-						LinkedIn Post Generator
-					</h1>
-					<PostInputForm onSubmit={handleSubmit} isLoading={isLoading} />
-					{isLoading && (
-						<button
-							onClick={handleCancel}
-							className="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg shadow-md transition-all"
-						>
-							Cancel
-						</button>
-					)}
-				</div>
-
-				{/* Right Panel */}
-				<div className="lg:col-span-2 space-y-8">
-					<div className="bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-md border border-gray-200">
-						<h2 className="text-xl font-semibold mb-3">Generation Progress</h2>
-						<div className="space-y-3">
-							{events.map((ev, i) => (
-								<div
-									key={i}
-									className="p-3 bg-gray-100 rounded-lg shadow-sm text-sm"
-								>
-									<div className="font-medium">{ev.type}</div>
-									{ev.message && (
-										<div className="text-gray-700">{ev.message}</div>
-									)}
-								</div>
-							))}
-						</div>
+		return (
+			<div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-950 to-black text-gray-100 p-6">
+				<div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+					{/* Left Panel */}
+					<div className="lg:col-span-1">
+						<h1 className="text-3xl font-extrabold mb-6 text-cyan-300">
+							LinkedIn Post Generator
+						</h1>
+						<PostInputForm onSubmit={handleSubmit} isLoading={isLoading} />
+						{isLoading && (
+							<button
+								onClick={handleCancel}
+								className="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg shadow-md transition-all"
+							>
+								Cancel
+							</button>
+						)}
 					</div>
 
-					<div>
-						<h2 className="text-xl font-semibold mb-3">Generated Posts</h2>
-						<div className="grid grid-cols-1 gap-6">
-							{posts.map((p, i) => (
-								<PostCard key={i} post={p} />
-							))}
+					{/* Right Panel */}
+					<div className="lg:col-span-2 space-y-8">
+						<div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-md border border-white/10">
+							<h2 className="text-xl font-semibold mb-3 text-cyan-300">
+								Generation Progress
+							</h2>
+							{isLoading && <Loader />}
+							<div className="space-y-3">
+								{events.map((ev, i) => (
+									<div
+										key={i}
+										className="p-3 bg-black/30 rounded-lg shadow-sm text-sm border border-white/10"
+									>
+										<div className="font-medium text-cyan-400">{ev.type}</div>
+										{ev.message && (
+											<div className="text-gray-300">{ev.message}</div>
+										)}
+									</div>
+								))}
+							</div>
+						</div>
+
+						<div>
+							<h2 className="text-xl font-semibold mb-3 text-cyan-300">
+								Generated Posts
+							</h2>
+							<div className="grid grid-cols-1 gap-6">
+								{posts.map((p, i) => (
+									<PostCard key={i} post={p} />
+								))}
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-	);
+		);
 }
 
 export default App;
