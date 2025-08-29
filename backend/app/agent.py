@@ -335,13 +335,30 @@ async def refine_posts_node(state: AgentState) -> AgentState:
         hashtags: List[str] = []
 
         if req.hashtags_option == "suggest":
-            resp = await call_llm(f"Suggest 3 hashtags (as JSON array) for: {text}")
+            resp = await call_llm(
+                f"Suggest exactly 3 simple hashtags for this LinkedIn post (return as plain text separated by commas, no quotes, no # symbols, no JSON): {text}"
+            )
 
             try:
+                # Try to parse as JSON first
                 hashtags = json.loads(resp)
-
             except Exception:
-                hashtags = [h.strip() for h in resp.split(",")[:3] if h.strip()]
+                # Fall back to comma-separated parsing and clean up
+                hashtags = []
+                # First clean the entire response of code blocks
+                cleaned_resp = resp.replace("```json", "").replace("```", "").strip()
+                
+                for h in cleaned_resp.split(",")[:3]:
+                    cleaned = (
+                        h.strip()
+                        .replace("#", "")
+                        .replace('"', "")
+                        .replace("'", "")
+                        .replace("[", "")
+                        .replace("]", "")
+                    )
+                    if cleaned:
+                        hashtags.append(cleaned)
 
         cta = req.cta_text or await call_llm(f"Suggest a concise CTA for: {text}")
 
