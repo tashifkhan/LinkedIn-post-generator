@@ -13,4 +13,11 @@ dependencies = [
 	"google-generativeai",
 	"aiohttp",
 	"langchain-google-genai>=2.0.10",
+	"langchain-community>=0.3.29",
+	"python-dotenv>=1.1.1",
+]
+
+[dependency-groups]
+dev = [
+    "uvicorn>=0.35.0",
 ]
