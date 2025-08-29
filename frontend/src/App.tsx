@@ -3,17 +3,27 @@ import "./index.css";
 import { PostInputForm } from "./components/PostInputForm";
 import { PostCard } from "./components/PostCard";
 import { Loader } from "./components/Loader";
+import { Toast } from "./components/Toast";
 import type {
 	PostGenerationRequest,
 	GeneratedPost,
 	StreamingEvent,
 } from "./types";
 
+const BASE_URL = process.env.BACKEND_URL || "http://localhost:8000/api";
+
 function App() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [events, setEvents] = useState<StreamingEvent[]>([]);
 	const [posts, setPosts] = useState<GeneratedPost[]>([]);
+	const [toastMessage, setToastMessage] = useState("");
+	const [showToast, setShowToast] = useState(false);
 	const abortRef = useRef<AbortController | null>(null);
+
+	const showToastMessage = useCallback((message: string) => {
+		setToastMessage(message);
+		setShowToast(true);
+	}, []);
 
 	const pushEvent = useCallback((ev: StreamingEvent) => {
 		setEvents((s) => [...s, ev]);
@@ -32,7 +42,7 @@ function App() {
 		abortRef.current = controller;
 
 		try {
-			const res = await fetch("/api/generate-posts-stream", {
+			const res = await fetch(`${BASE_URL}/generate-posts-stream`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(data),
@@ -166,19 +176,102 @@ function App() {
 							</div>
 						</div>
 
+						{/* Final Output Summary */}
+						{posts.length > 0 && (
+							<div className="card p-5 sm:p-6">
+								<div className="flex items-center justify-between mb-4">
+									<h2 className="text-lg sm:text-xl font-semibold section-title">
+										Final Results ({posts.length} posts)
+									</h2>
+									<div className="flex gap-2">
+										<button
+											onClick={() => {
+												const allText = posts
+													.map(
+														(p, i) =>
+															`Post ${i + 1}:\n${p.text}\n\nHashtags: ${
+																p.hashtags?.map((h) => `#${h}`).join(" ") ||
+																"None"
+															}\nCTA: ${p.cta_suggestion || "None"}\n\n---\n`
+													)
+													.join("\n");
+												navigator.clipboard.writeText(allText);
+												showToastMessage("All posts copied to clipboard!");
+											}}
+											className="btn-secondary text-sm"
+										>
+											Copy All
+										</button>
+										<button
+											onClick={() => {
+												const data = {
+													generated_at: new Date().toISOString(),
+													posts: posts,
+													total_posts: posts.length,
+												};
+												const blob = new Blob([JSON.stringify(data, null, 2)], {
+													type: "application/json",
+												});
+												const url = URL.createObjectURL(blob);
+												const a = document.createElement("a");
+												a.href = url;
+												a.download = `linkedin-posts-${
+													new Date().toISOString().split("T")[0]
+												}.json`;
+												a.click();
+												URL.revokeObjectURL(url);
+												showToastMessage("Posts exported as JSON!");
+											}}
+											className="btn-secondary text-sm"
+										>
+											Export JSON
+										</button>
+									</div>
+								</div>
+								<div className="text-sm text-[color:var(--text-secondary)] mb-4">
+									Generation completed successfully. {posts.length} unique posts
+									created.
+								</div>
+							</div>
+						)}
+
 						<div>
 							<h2 className="text-lg sm:text-xl font-semibold mb-3 section-title">
 								Generated Posts
 							</h2>
+							{posts.length === 0 && !isLoading && (
+								<div className="card p-8 text-center">
+									<div className="text-[color:var(--text-secondary)] mb-2">
+										No posts generated yet
+									</div>
+									<div className="text-sm text-[color:var(--text-secondary)]">
+										Fill out the form and click "Generate LinkedIn Posts" to get
+										started
+									</div>
+								</div>
+							)}
 							<div className="grid grid-cols-1 gap-5 sm:gap-6">
 								{posts.map((p, i) => (
-									<PostCard key={i} post={p} />
+									<PostCard
+										key={i}
+										post={p}
+										onCopy={() =>
+											showToastMessage(`Post ${i + 1} copied to clipboard!`)
+										}
+									/>
 								))}
 							</div>
 						</div>
 					</div>
 				</div>
 			</main>
+
+			<Toast
+				message={toastMessage}
+				isVisible={showToast}
+				onClose={() => setShowToast(false)}
+				type="success"
+			/>
 		</div>
 	);
 }

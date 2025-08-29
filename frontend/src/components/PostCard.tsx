@@ -4,9 +4,18 @@ import { motion } from "framer-motion";
 
 interface PostCardProps {
 	post: GeneratedPost;
+	onCopy?: () => void;
 }
 
-export const PostCard: React.FC<PostCardProps> = ({ post }) => {
+export const PostCard: React.FC<PostCardProps> = ({ post, onCopy }) => {
+	const copyToClipboard = () => {
+		const postText = `${post.text}\n\n${
+			post.hashtags?.map((h) => `#${h}`).join(" ") || ""
+		}\n\n${post.cta_suggestion || ""}`.trim();
+		navigator.clipboard.writeText(postText);
+		onCopy?.();
+	};
+
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
@@ -17,12 +26,21 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
 			{/* Accent Bar */}
 			<div className="absolute top-0 left-0 w-full h-1 rounded-t-[16px] bg-[color:var(--accent)]"></div>
 
-			{/* Project Title */}
-			{post.github_project_name && (
-				<h3 className="text-xl sm:text-2xl font-bold text-[color:var(--accent)] mb-3">
-					{post.github_project_name}
-				</h3>
-			)}
+			{/* Header with Project Title and Copy Button */}
+			<div className="flex items-start justify-between mb-3">
+				{post.github_project_name && (
+					<h3 className="text-xl sm:text-2xl font-bold text-[color:var(--accent)]">
+						{post.github_project_name}
+					</h3>
+				)}
+				<button
+					onClick={copyToClipboard}
+					className="btn-secondary text-xs px-3 py-1 ml-auto"
+					title="Copy post to clipboard"
+				>
+					Copy
+				</button>
+			</div>
 
 			{/* Post Text */}
 			<p className="text-[color:var(--text-primary)] text-base sm:text-lg leading-relaxed whitespace-pre-wrap mb-4">

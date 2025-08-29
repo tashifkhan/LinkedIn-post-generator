@@ -93,6 +93,22 @@ opacity: .6;
 cursor: not-allowed;
 }
 
+.btn-secondary {
+background: rgba(255,255,255,0.1);
+color: var(--text-primary);
+border: 1px solid var(--card-border);
+padding: 8px 12px;
+border-radius: 8px;
+font-weight: 500;
+transition: background .15s ease, border-color .15s ease;
+font-size: 14px;
+}
+
+.btn-secondary:hover {
+background: rgba(255,255,255,0.15);
+border-color: var(--accent);
+}
+
 .tag {
 background: var(--accent);
 color: #fff;
