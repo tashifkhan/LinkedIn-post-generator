@@ -347,7 +347,7 @@ async def refine_posts_node(state: AgentState) -> AgentState:
                 hashtags = []
                 # First clean the entire response of code blocks
                 cleaned_resp = resp.replace("```json", "").replace("```", "").strip()
-                
+
                 for h in cleaned_resp.split(",")[:3]:
                     cleaned = (
                         h.strip()
