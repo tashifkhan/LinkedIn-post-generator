@@ -30,7 +30,6 @@ def create_llm_google_genai() -> Exception | ChatGoogleGenerativeAI:  # type: ig
     raise RuntimeError("No supported LLM client found. Install langchain chat models.")
 
 
-llm = None
 llm = create_llm_google_genai()
 
 

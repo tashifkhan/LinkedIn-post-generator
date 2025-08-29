@@ -1,6 +1,7 @@
 import React from "react";
 import type { GeneratedPost } from "../types";
 import { motion } from "framer-motion";
+import ReactMarkdown from "react-markdown";
 
 interface PostCardProps {
 	post: GeneratedPost;
@@ -43,9 +44,59 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onCopy }) => {
 			</div>
 
 			{/* Post Text */}
-			<p className="text-[color:var(--text-primary)] text-base sm:text-lg leading-relaxed whitespace-pre-wrap mb-4">
-				{post.text}
-			</p>
+			<div className="text-[color:var(--text-primary)] text-base sm:text-lg leading-relaxed mb-4 prose prose-invert max-w-none">
+				<ReactMarkdown
+					components={{
+						p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
+						strong: ({ children }) => (
+							<strong className="font-semibold text-[color:var(--accent)]">
+								{children}
+							</strong>
+						),
+						em: ({ children }) => <em className="italic">{children}</em>,
+						ul: ({ children }) => (
+							<ul className="list-disc list-inside mb-3 space-y-1">
+								{children}
+							</ul>
+						),
+						ol: ({ children }) => (
+							<ol className="list-decimal list-inside mb-3 space-y-1">
+								{children}
+							</ol>
+						),
+						li: ({ children }) => (
+							<li className="text-[color:var(--text-primary)]">{children}</li>
+						),
+						h1: ({ children }) => (
+							<h1 className="text-xl font-bold mb-2 text-[color:var(--accent)]">
+								{children}
+							</h1>
+						),
+						h2: ({ children }) => (
+							<h2 className="text-lg font-semibold mb-2 text-[color:var(--accent)]">
+								{children}
+							</h2>
+						),
+						h3: ({ children }) => (
+							<h3 className="text-base font-medium mb-2 text-[color:var(--accent)]">
+								{children}
+							</h3>
+						),
+						blockquote: ({ children }) => (
+							<blockquote className="border-l-4 border-[color:var(--accent)] pl-4 italic text-[color:var(--text-secondary)] mb-3">
+								{children}
+							</blockquote>
+						),
+						code: ({ children }) => (
+							<code className="bg-[color:rgba(255,255,255,0.1)] px-1 py-0.5 rounded text-sm font-mono">
+								{children}
+							</code>
+						),
+					}}
+				>
+					{post.text}
+				</ReactMarkdown>
+			</div>
 
 			{/* Hashtags */}
 			{post.hashtags && post.hashtags.length > 0 && (
