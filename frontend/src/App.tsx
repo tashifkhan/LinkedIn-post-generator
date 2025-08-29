@@ -57,9 +57,7 @@ function App() {
 				if (done) break;
 				buffer += decoder.decode(value, { stream: true });
 
-				// SSE events are separated by double newline
 				let parts = buffer.split("\n\n");
-				// keep last partial chunk in buffer
 				buffer = parts.pop() || "";
 
 				for (const part of parts) {
@@ -75,44 +73,15 @@ function App() {
 						if (parsed.type === "POST_GENERATED" && parsed.payload) {
 							pushPost(parsed.payload as GeneratedPost);
 						}
-						if (parsed.type === "COMPLETE") {
+						if (parsed.type === "COMPLETE" || parsed.type === "ERROR") {
 							setIsLoading(false);
 							controller.abort();
 							break;
-						}
-						if (parsed.type === "ERROR") {
-							setIsLoading(false);
-							controller.abort();
-							break;
-						}
-					} catch (e) {
-						// ignore parse errors but log event
-						pushEvent({
-							type: "ERROR",
-							message: `Failed to parse event: ${e}`,
-						});
-					}
-				}
-			}
-
-			// consume remaining buffer if any
-			if (buffer.trim()) {
-				const lines = buffer.split("\n").map((l) => l.trim());
-				const dataLines = lines.filter((l) => l.startsWith("data:"));
-				if (dataLines.length) {
-					const jsonText = dataLines
-						.map((l) => l.replace(/^data:\s?/, ""))
-						.join("\n");
-					try {
-						const parsed: StreamingEvent = JSON.parse(jsonText);
-						pushEvent(parsed);
-						if (parsed.type === "POST_GENERATED" && parsed.payload) {
-							pushPost(parsed.payload as GeneratedPost);
 						}
 					} catch (e) {
 						pushEvent({
 							type: "ERROR",
-							message: `Failed to parse final event: ${e}`,
+							message: `Failed to parse event: ${e}`,
 						});
 					}
 				}
@@ -137,39 +106,50 @@ function App() {
 	};
 
 	return (
-		<div className="min-h-screen bg-gray-50 p-6">
-			<div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+		<div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 p-6">
+			<div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+				{/* Left Panel */}
 				<div className="lg:col-span-1">
-					<h1 className="text-2xl font-bold mb-4">LinkedIn Post Generator</h1>
+					<h1 className="text-3xl font-extrabold mb-6 text-gray-900">
+						LinkedIn Post Generator
+					</h1>
 					<PostInputForm onSubmit={handleSubmit} isLoading={isLoading} />
 					{isLoading && (
 						<button
 							onClick={handleCancel}
-							className="mt-4 w-full bg-red-500 text-white py-2 rounded"
+							className="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg shadow-md transition-all"
 						>
 							Cancel
 						</button>
 					)}
 				</div>
 
-				<div className="lg:col-span-2">
-					<h2 className="text-xl font-semibold mb-3">Generation Progress</h2>
-					<div className="space-y-3 mb-6">
-						{events.map((ev, i) => (
-							<div key={i} className="p-3 bg-white rounded shadow-sm text-sm">
-								<div className="font-medium">{ev.type}</div>
-								{ev.message && (
-									<div className="text-gray-700">{ev.message}</div>
-								)}
-							</div>
-						))}
+				{/* Right Panel */}
+				<div className="lg:col-span-2 space-y-8">
+					<div className="bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-md border border-gray-200">
+						<h2 className="text-xl font-semibold mb-3">Generation Progress</h2>
+						<div className="space-y-3">
+							{events.map((ev, i) => (
+								<div
+									key={i}
+									className="p-3 bg-gray-100 rounded-lg shadow-sm text-sm"
+								>
+									<div className="font-medium">{ev.type}</div>
+									{ev.message && (
+										<div className="text-gray-700">{ev.message}</div>
+									)}
+								</div>
+							))}
+						</div>
 					</div>
 
-					<h2 className="text-xl font-semibold mb-3">Generated Posts</h2>
-					<div className="grid grid-cols-1 gap-4">
-						{posts.map((p, i) => (
-							<PostCard key={i} post={p} />
-						))}
+					<div>
+						<h2 className="text-xl font-semibold mb-3">Generated Posts</h2>
+						<div className="grid grid-cols-1 gap-6">
+							{posts.map((p, i) => (
+								<PostCard key={i} post={p} />
+							))}
+						</div>
 					</div>
 				</div>
 			</div>

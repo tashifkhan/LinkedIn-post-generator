@@ -51,7 +51,10 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 	};
 
 	return (
-		<form onSubmit={handleSubmit} className="space-y-6">
+		<form
+			onSubmit={handleSubmit}
+			className="space-y-6 bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-md border border-gray-200"
+		>
 			<div>
 				<label
 					htmlFor="topic"
@@ -65,11 +68,13 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 					value={topic}
 					onChange={(e) => setTopic(e.target.value)}
 					required
-					className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+					className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-2 focus:ring-purple-500 focus:border-purple-500"
 				/>
 			</div>
 
+			{/* Grid Inputs */}
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+				{/* Tone */}
 				<div>
 					<label
 						htmlFor="tone"
@@ -81,7 +86,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 						id="tone"
 						value={tone}
 						onChange={(e) => setTone(e.target.value)}
-						className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+						className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-2 focus:ring-purple-500 focus:border-purple-500"
 					>
 						<option>Professional</option>
 						<option>Casual</option>
@@ -92,6 +97,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 					</select>
 				</div>
 
+				{/* Length */}
 				<div>
 					<label
 						htmlFor="length"
@@ -105,7 +111,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 						onChange={(e) =>
 							setLength(e.target.value as PostGenerationRequest["length"])
 						}
-						className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+						className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-2 focus:ring-purple-500 focus:border-purple-500"
 					>
 						<option>Short</option>
 						<option>Medium</option>
@@ -114,6 +120,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 					</select>
 				</div>
 
+				{/* Post Count */}
 				<div>
 					<label
 						htmlFor="postCount"
@@ -130,10 +137,11 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 						}
 						min="1"
 						max="5"
-						className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+						className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-2 focus:ring-purple-500 focus:border-purple-500"
 					/>
 				</div>
 
+				{/* Hashtags */}
 				<div>
 					<label
 						htmlFor="hashtagsOption"
@@ -147,13 +155,14 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 						onChange={(e) =>
 							setHashtagsOption(e.target.value as "suggest" | "none")
 						}
-						className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+						className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-2 focus:ring-purple-500 focus:border-purple-500"
 					>
 						<option value="suggest">Suggest based on topic</option>
 						<option value="none">No hashtags</option>
 					</select>
 				</div>
 
+				{/* Language */}
 				<div>
 					<label
 						htmlFor="language"
@@ -165,7 +174,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 						id="language"
 						value={language}
 						onChange={(e) => setLanguage(e.target.value)}
-						className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+						className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-2 focus:ring-purple-500 focus:border-purple-500"
 					>
 						<option>English</option>
 						<option>Spanish</option>
@@ -173,6 +182,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 					</select>
 				</div>
 
+				{/* Emoji Level */}
 				<div className="md:col-span-full lg:col-span-1">
 					<label
 						htmlFor="emojiLevel"
@@ -191,17 +201,12 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 						step="1"
 						value={emojiLevel}
 						onChange={(e) => setEmojiLevel(parseInt(e.target.value, 10))}
-						className="mt-1 w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg dark:bg-gray-700"
+						className="mt-1 w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
 					/>
-					<div className="flex justify-between text-xs text-gray-500 mt-1">
-						<span>None</span>
-						<span>Few</span>
-						<span>Moderate</span>
-						<span>Many</span>
-					</div>
 				</div>
 			</div>
 
+			{/* Audience */}
 			<div>
 				<label
 					htmlFor="audience"
@@ -231,7 +236,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 										setAudience(audience.filter((a) => a !== aud));
 									}
 								}}
-								className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+								className="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded"
 							/>
 							<label
 								htmlFor={`audience-${aud}`}
@@ -244,6 +249,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 				</div>
 			</div>
 
+			{/* CTA */}
 			<div>
 				<label
 					htmlFor="ctaText"
@@ -256,53 +262,55 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 					id="ctaText"
 					value={ctaText}
 					onChange={(e) => setCtaText(e.target.value)}
-					placeholder="e.g., 'Learn more on our website!'"
-					className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+					placeholder="e.g., Learn more on our website!"
+					className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-2 focus:ring-purple-500 focus:border-purple-500"
 				/>
 			</div>
 
+			{/* GitHub URL */}
 			<div>
 				<label
 					htmlFor="githubProjectUrl"
 					className="block text-sm font-medium text-gray-700"
 				>
-					GitHub Project URL (Optional - if posting about your project):
+					GitHub Project URL (Optional):
 				</label>
 				<input
 					type="url"
 					id="githubProjectUrl"
 					value={githubProjectUrl}
 					onChange={(e) => setGithubProjectUrl(e.target.value)}
-					placeholder="e.g., https://github.com/username/my-awesome-project"
-					className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+					placeholder="https://github.com/username/my-awesome-project"
+					className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-2 focus:ring-purple-500 focus:border-purple-500"
 				/>
 			</div>
 
+			{/* Mimic Examples */}
 			<div>
 				<label
 					htmlFor="mimicExamples"
 					className="block text-sm font-medium text-gray-700"
 				>
-					Examples to Mimic (Optional, paste a few sentences or a full post for
-					style analysis):
+					Examples to Mimic (Optional):
 				</label>
 				<textarea
 					id="mimicExamples"
 					value={mimicExamples}
 					onChange={(e) => setMimicExamples(e.target.value)}
 					rows={4}
-					placeholder="e.g., 'I really like the engaging tone of this post: [Paste example here]'"
-					className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+					placeholder="Paste example text here..."
+					className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-2 focus:ring-purple-500 focus:border-purple-500"
 				></textarea>
 			</div>
 
+			{/* Submit */}
 			<button
 				type="submit"
 				disabled={isLoading || !topic.trim()}
-				className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white ${
+				className={`w-full py-3 px-4 rounded-lg text-lg font-semibold text-white shadow-md transition-all duration-300 ${
 					isLoading || !topic.trim()
-						? "bg-blue-400 cursor-not-allowed"
-						: "bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+						? "bg-purple-400 cursor-not-allowed"
+						: "bg-gradient-to-r from-blue-500 to-purple-600 hover:shadow-lg hover:scale-[1.02]"
 				}`}
 			>
 				{isLoading ? "Generating..." : "Generate LinkedIn Posts"}
