@@ -206,13 +206,41 @@ function App() {
 									<div className="flex gap-2">
 										<button
 											onClick={() => {
+												const stripMarkdown = (text: string) => {
+													if (!text) return text;
+													return text
+														.replace(/\*\*(.+?)\*\*/g, "$1") // Remove **bold**
+														.replace(/\*(.+?)\*/g, "$1") // Remove *italic*
+														.replace(/_(.+?)_/g, "$1") // Remove _italic_
+														.replace(/`(.+?)`/g, "$1") // Remove `code`
+														.replace(/#{1,6}\s*/g, "") // Remove headers
+														.replace(/\*+/g, "") // Remove remaining asterisks
+														.trim();
+												};
+
+												const cleanHashtag = (tag: string) => {
+													if (!tag) return tag;
+													return tag
+														.replace(/```json/g, "") // Remove ```json
+														.replace(/```/g, "") // Remove ```
+														.replace(/['"]/g, "") // Remove quotes
+														.replace(/[#]/g, "") // Remove # symbols
+														.replace(/\[|\]/g, "") // Remove brackets
+														.trim();
+												};
+
 												const allText = posts
 													.map(
 														(p, i) =>
-															`Post ${i + 1}:\n${p.text}\n\nHashtags: ${
-																p.hashtags?.map((h) => `#${h}`).join(" ") ||
-																"None"
-															}\nCTA: ${p.cta_suggestion || "None"}\n\n---\n`
+															`Post ${i + 1}:\n${stripMarkdown(
+																p.text
+															)}\n\nHashtags: ${
+																p.hashtags
+																	?.map((h) => `#${cleanHashtag(h)}`)
+																	.join(" ") || "None"
+															}\nCTA: ${stripMarkdown(
+																p.cta_suggestion || ""
+															)}\n\n---\n`
 													)
 													.join("\n");
 												navigator.clipboard.writeText(allText);

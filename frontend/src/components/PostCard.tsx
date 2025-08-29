@@ -1,7 +1,6 @@
 import React from "react";
 import type { GeneratedPost } from "../types";
 import { motion } from "framer-motion";
-import ReactMarkdown from "react-markdown";
 
 interface PostCardProps {
 	post: GeneratedPost;
@@ -9,10 +8,33 @@ interface PostCardProps {
 }
 
 export const PostCard: React.FC<PostCardProps> = ({ post, onCopy }) => {
+	const stripMarkdown = (text: string) => {
+		if (!text) return text;
+		return text
+			.replace(/\*\*(.+?)\*\*/g, "$1") // Remove **bold**
+			.replace(/\*(.+?)\*/g, "$1") // Remove *italic*
+			.replace(/_(.+?)_/g, "$1") // Remove _italic_
+			.replace(/`(.+?)`/g, "$1") // Remove `code`
+			.replace(/#{1,6}\s*/g, "") // Remove headers
+			.replace(/\*+/g, "") // Remove remaining asterisks
+			.trim();
+	};
+
+	const cleanHashtag = (tag: string) => {
+		if (!tag) return tag;
+		return tag
+			.replace(/```json/g, "") // Remove ```json
+			.replace(/```/g, "") // Remove ```
+			.replace(/['"]/g, "") // Remove quotes
+			.replace(/[#]/g, "") // Remove # symbols
+			.replace(/\[|\]/g, "") // Remove brackets
+			.trim();
+	};
+
 	const copyToClipboard = () => {
-		const postText = `${post.text}\n\n${
-			post.hashtags?.map((h) => `#${h}`).join(" ") || ""
-		}\n\n${post.cta_suggestion || ""}`.trim();
+		const postText = `${stripMarkdown(post.text)}\n\n${
+			post.hashtags?.map((h) => `#${cleanHashtag(h)}`).join(" ") || ""
+		}\n\n${stripMarkdown(post.cta_suggestion || "")}`.trim();
 		navigator.clipboard.writeText(postText);
 		onCopy?.();
 	};
@@ -44,66 +66,16 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onCopy }) => {
 			</div>
 
 			{/* Post Text */}
-			<div className="text-[color:var(--text-primary)] text-base sm:text-lg leading-relaxed mb-4 prose prose-invert max-w-none">
-				<ReactMarkdown
-					components={{
-						p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
-						strong: ({ children }) => (
-							<strong className="font-semibold text-[color:var(--accent)]">
-								{children}
-							</strong>
-						),
-						em: ({ children }) => <em className="italic">{children}</em>,
-						ul: ({ children }) => (
-							<ul className="list-disc list-inside mb-3 space-y-1">
-								{children}
-							</ul>
-						),
-						ol: ({ children }) => (
-							<ol className="list-decimal list-inside mb-3 space-y-1">
-								{children}
-							</ol>
-						),
-						li: ({ children }) => (
-							<li className="text-[color:var(--text-primary)]">{children}</li>
-						),
-						h1: ({ children }) => (
-							<h1 className="text-xl font-bold mb-2 text-[color:var(--accent)]">
-								{children}
-							</h1>
-						),
-						h2: ({ children }) => (
-							<h2 className="text-lg font-semibold mb-2 text-[color:var(--accent)]">
-								{children}
-							</h2>
-						),
-						h3: ({ children }) => (
-							<h3 className="text-base font-medium mb-2 text-[color:var(--accent)]">
-								{children}
-							</h3>
-						),
-						blockquote: ({ children }) => (
-							<blockquote className="border-l-4 border-[color:var(--accent)] pl-4 italic text-[color:var(--text-secondary)] mb-3">
-								{children}
-							</blockquote>
-						),
-						code: ({ children }) => (
-							<code className="bg-[color:rgba(255,255,255,0.1)] px-1 py-0.5 rounded text-sm font-mono">
-								{children}
-							</code>
-						),
-					}}
-				>
-					{post.text}
-				</ReactMarkdown>
-			</div>
+			<p className="text-[color:var(--text-primary)] text-base sm:text-lg leading-relaxed whitespace-pre-wrap mb-4">
+				{stripMarkdown(post.text)}
+			</p>
 
 			{/* Hashtags */}
 			{post.hashtags && post.hashtags.length > 0 && (
 				<div className="mb-4 flex flex-wrap gap-2">
 					{post.hashtags.map((tag, i) => (
 						<span key={i} className="tag">
-							#{tag}
+							#{cleanHashtag(tag)}
 						</span>
 					))}
 				</div>
@@ -116,7 +88,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onCopy }) => {
 						CTA:
 					</span>{" "}
 					<span className="italic text-[color:var(--text-secondary)]">
-						{post.cta_suggestion}
+						{stripMarkdown(post.cta_suggestion)}
 					</span>
 				</div>
 			)}
