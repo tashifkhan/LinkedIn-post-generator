@@ -12,20 +12,20 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.3 }}
-			className="relative bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-white/10 hover:shadow-cyan-500/20 hover:-translate-y-1 transition-all duration-300"
+			className="relative card p-5 sm:p-6 hover:-translate-y-1 transition-all duration-300"
 		>
-			{/* Gradient Accent Bar */}
-			<div className="absolute top-0 left-0 w-full h-1 rounded-t-2xl bg-gradient-to-r from-cyan-400 via-teal-500 to-blue-600"></div>
+			{/* Accent Bar */}
+			<div className="absolute top-0 left-0 w-full h-1 rounded-t-[16px] bg-[color:var(--accent)]"></div>
 
 			{/* Project Title */}
 			{post.github_project_name && (
-				<h3 className="text-2xl font-bold text-cyan-300 mb-3">
+				<h3 className="text-xl sm:text-2xl font-bold text-[color:var(--accent)] mb-3">
 					{post.github_project_name}
 				</h3>
 			)}
 
 			{/* Post Text */}
-			<p className="text-gray-200 text-lg leading-relaxed whitespace-pre-wrap mb-4">
+			<p className="text-[color:var(--text-primary)] text-base sm:text-lg leading-relaxed whitespace-pre-wrap mb-4">
 				{post.text}
 			</p>
 
@@ -33,10 +33,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
 			{post.hashtags && post.hashtags.length > 0 && (
 				<div className="mb-4 flex flex-wrap gap-2">
 					{post.hashtags.map((tag, i) => (
-						<span
-							key={i}
-							className="inline-block bg-gradient-to-r from-cyan-400 to-blue-600 text-white text-xs px-3 py-1 rounded-full shadow-sm"
-						>
+						<span key={i} className="tag">
 							#{tag}
 						</span>
 					))}
@@ -46,14 +43,18 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
 			{/* CTA */}
 			{post.cta_suggestion && (
 				<div className="mb-3">
-					<span className="text-sm font-semibold text-cyan-300">CTA:</span>{" "}
-					<span className="italic text-gray-300">{post.cta_suggestion}</span>
+					<span className="text-sm font-semibold text-[color:var(--accent)]">
+						CTA:
+					</span>{" "}
+					<span className="italic text-[color:var(--text-secondary)]">
+						{post.cta_suggestion}
+					</span>
 				</div>
 			)}
 
 			{/* Token Info */}
 			{post.token_info && (
-				<div className="text-xs text-gray-400 mt-2">
+				<div className="text-xs text-[color:var(--text-secondary)] mt-2">
 					<span className="font-semibold">Tokens:</span> Prompt{" "}
 					{post.token_info.prompt_tokens}, Completion{" "}
 					{post.token_info.completion_tokens}
@@ -64,8 +65,10 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
 			{/* Sources */}
 			{post.sources && post.sources.length > 0 && (
-				<div className="mt-4 text-sm text-gray-300">
-					<p className="font-semibold mb-1 text-cyan-300">Sources:</p>
+				<div className="mt-4 text-sm text-[color:var(--text-secondary)]">
+					<p className="font-semibold mb-1 text-[color:var(--accent)]">
+						Sources:
+					</p>
 					<ul className="list-disc list-inside space-y-1">
 						{post.sources.map((source, i) => (
 							<li key={i}>
@@ -73,7 +76,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
 									href={source.link}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="text-cyan-400 hover:text-teal-300 hover:underline transition-colors"
+									className="text-[color:var(--accent)] hover:underline"
 								>
 									{source.title}
 								</a>

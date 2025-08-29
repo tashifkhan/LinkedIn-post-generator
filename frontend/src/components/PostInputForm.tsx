@@ -53,12 +53,12 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 	return (
 		<form
 			onSubmit={handleSubmit}
-			className="space-y-6 bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-md border border-white/10"
+			className="card p-4 sm:p-6 space-y-5 sm:space-y-6"
 		>
 			<div>
 				<label
 					htmlFor="topic"
-					className="block text-sm font-medium text-gray-200"
+					className="block text-sm font-medium text-[color:var(--text-secondary)]"
 				>
 					Topic (Required):
 				</label>
@@ -68,17 +68,17 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 					value={topic}
 					onChange={(e) => setTopic(e.target.value)}
 					required
-					className="mt-1 block w-full border border-white/20 rounded-lg shadow-sm p-2 bg-black/30 text-gray-100 focus:ring-cyan-400 focus:border-cyan-400"
+					className="input mt-1"
 				/>
 			</div>
 
 			{/* Grid Inputs */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+			<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
 				{/* Tone */}
 				<div>
 					<label
 						htmlFor="tone"
-						className="block text-sm font-medium text-gray-200"
+						className="block text-sm font-medium text-[color:var(--text-secondary)]"
 					>
 						Tone:
 					</label>
@@ -86,7 +86,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 						id="tone"
 						value={tone}
 						onChange={(e) => setTone(e.target.value)}
-						className="mt-1 block w-full border border-white/20 rounded-lg shadow-sm p-2 bg-black/30 text-gray-100 focus:ring-cyan-400 focus:border-cyan-400"
+						className="select mt-1"
 					>
 						<option>Professional</option>
 						<option>Casual</option>
@@ -101,7 +101,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 				<div>
 					<label
 						htmlFor="length"
-						className="block text-sm font-medium text-gray-200"
+						className="block text-sm font-medium text-[color:var(--text-secondary)]"
 					>
 						Length:
 					</label>
@@ -111,7 +111,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 						onChange={(e) =>
 							setLength(e.target.value as PostGenerationRequest["length"])
 						}
-						className="mt-1 block w-full border border-white/20 rounded-lg shadow-sm p-2 bg-black/30 text-gray-100 focus:ring-cyan-400 focus:border-cyan-400"
+						className="select mt-1"
 					>
 						<option>Short</option>
 						<option>Medium</option>
@@ -124,7 +124,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 				<div>
 					<label
 						htmlFor="postCount"
-						className="block text-sm font-medium text-gray-200"
+						className="block text-sm font-medium text-[color:var(--text-secondary)]"
 					>
 						Number of Posts:
 					</label>
@@ -137,7 +137,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 						}
 						min="1"
 						max="5"
-						className="mt-1 block w-full border border-white/20 rounded-lg shadow-sm p-2 bg-black/30 text-gray-100 focus:ring-cyan-400 focus:border-cyan-400"
+						className="input mt-1"
 					/>
 				</div>
 
@@ -145,7 +145,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 				<div>
 					<label
 						htmlFor="hashtagsOption"
-						className="block text-sm font-medium text-gray-200"
+						className="block text-sm font-medium text-[color:var(--text-secondary)]"
 					>
 						Hashtags:
 					</label>
@@ -155,7 +155,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 						onChange={(e) =>
 							setHashtagsOption(e.target.value as "suggest" | "none")
 						}
-						className="mt-1 block w-full border border-white/20 rounded-lg shadow-sm p-2 bg-black/30 text-gray-100 focus:ring-cyan-400 focus:border-cyan-400"
+						className="select mt-1"
 					>
 						<option value="suggest">Suggest based on topic</option>
 						<option value="none">No hashtags</option>
@@ -166,7 +166,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 				<div>
 					<label
 						htmlFor="language"
-						className="block text-sm font-medium text-gray-200"
+						className="block text-sm font-medium text-[color:var(--text-secondary)]"
 					>
 						Language:
 					</label>
@@ -174,7 +174,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 						id="language"
 						value={language}
 						onChange={(e) => setLanguage(e.target.value)}
-						className="mt-1 block w-full border border-white/20 rounded-lg shadow-sm p-2 bg-black/30 text-gray-100 focus:ring-cyan-400 focus:border-cyan-400"
+						className="select mt-1"
 					>
 						<option>English</option>
 						<option>Spanish</option>
@@ -183,10 +183,10 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 				</div>
 
 				{/* Emoji Level */}
-				<div className="md:col-span-full lg:col-span-1">
+				<div className="sm:col-span-2">
 					<label
 						htmlFor="emojiLevel"
-						className="block text-sm font-medium text-gray-200"
+						className="block text-sm font-medium text-[color:var(--text-secondary)]"
 					>
 						Emojis:{" "}
 						<span className="font-semibold">
@@ -201,7 +201,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 						step="1"
 						value={emojiLevel}
 						onChange={(e) => setEmojiLevel(parseInt(e.target.value, 10))}
-						className="mt-1 w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+						className="mt-1 w-full h-2 bg-[rgba(255,255,255,0.15)] rounded-lg appearance-none cursor-pointer"
 					/>
 				</div>
 			</div>
@@ -210,11 +210,11 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 			<div>
 				<label
 					htmlFor="audience"
-					className="block text-sm font-medium text-gray-200"
+					className="block text-sm font-medium text-[color:var(--text-secondary)]"
 				>
 					Audience (select all that apply):
 				</label>
-				<div className="mt-1 grid grid-cols-2 sm:grid-cols-3 gap-2">
+				<div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-3">
 					{[
 						"Founders",
 						"Engineers",
@@ -236,11 +236,11 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 										setAudience(audience.filter((a) => a !== aud));
 									}
 								}}
-								className="focus:ring-cyan-400 h-4 w-4 text-cyan-600 border-white/20 rounded"
+								className="focus:ring-[color:var(--accent)] h-4 w-4 text-cyan-600 border-[color:var(--card-border)] rounded"
 							/>
 							<label
 								htmlFor={`audience-${aud}`}
-								className="ml-2 text-sm text-gray-200"
+								className="ml-2 text-sm text-[color:var(--text-primary)]"
 							>
 								{aud}
 							</label>
@@ -253,7 +253,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 			<div>
 				<label
 					htmlFor="ctaText"
-					className="block text-sm font-medium text-gray-200"
+					className="block text-sm font-medium text-[color:var(--text-secondary)]"
 				>
 					Custom Call to Action (Optional):
 				</label>
@@ -263,7 +263,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 					value={ctaText}
 					onChange={(e) => setCtaText(e.target.value)}
 					placeholder="e.g., Learn more on our website!"
-					className="mt-1 block w-full border border-white/20 rounded-lg shadow-sm p-2 bg-black/30 text-gray-100 focus:ring-cyan-400 focus:border-cyan-400"
+					className="input mt-1"
 				/>
 			</div>
 
@@ -271,7 +271,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 			<div>
 				<label
 					htmlFor="githubProjectUrl"
-					className="block text-sm font-medium text-gray-200"
+					className="block text-sm font-medium text-[color:var(--text-secondary)]"
 				>
 					GitHub Project URL (Optional):
 				</label>
@@ -281,7 +281,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 					value={githubProjectUrl}
 					onChange={(e) => setGithubProjectUrl(e.target.value)}
 					placeholder="https://github.com/username/my-awesome-project"
-					className="mt-1 block w-full border border-white/20 rounded-lg shadow-sm p-2 bg-black/30 text-gray-100 focus:ring-cyan-400 focus:border-cyan-400"
+					className="input mt-1"
 				/>
 			</div>
 
@@ -289,7 +289,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 			<div>
 				<label
 					htmlFor="mimicExamples"
-					className="block text-sm font-medium text-gray-200"
+					className="block text-sm font-medium text-[color:var(--text-secondary)]"
 				>
 					Examples to Mimic (Optional):
 				</label>
@@ -299,7 +299,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 					onChange={(e) => setMimicExamples(e.target.value)}
 					rows={4}
 					placeholder="Paste example text here..."
-					className="mt-1 block w-full border border-white/20 rounded-lg shadow-sm p-2 bg-black/30 text-gray-100 focus:ring-cyan-400 focus:border-cyan-400"
+					className="textarea mt-1"
 				></textarea>
 			</div>
 
@@ -307,11 +307,7 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 			<button
 				type="submit"
 				disabled={isLoading || !topic.trim()}
-				className={`w-full py-3 px-4 rounded-lg text-lg font-semibold text-white shadow-md transition-all duration-300 ${
-					isLoading || !topic.trim()
-						? "bg-cyan-700/50 cursor-not-allowed"
-						: "bg-gradient-to-r from-cyan-400 via-teal-500 to-blue-600 hover:shadow-lg hover:scale-[1.02]"
-				}`}
+				className="btn-primary w-full text-base sm:text-lg"
 			>
 				{isLoading ? "Generating..." : "Generate LinkedIn Posts"}
 			</button>

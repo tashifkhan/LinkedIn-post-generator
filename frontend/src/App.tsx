@@ -107,58 +107,78 @@ function App() {
 	};
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-950 to-black text-gray-100 p-6">
-			<div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-				{/* Left Panel */}
-				<div className="lg:col-span-1">
-					<h1 className="text-3xl font-extrabold mb-6 text-cyan-300">
+		<div className="min-h-screen">
+			<header className="header-blur sticky top-0 z-20">
+				<div className="app-container flex items-center justify-between py-3 sm:py-4">
+					<h1 className="text-lg sm:text-xl lg:text-2xl font-extrabold tracking-tight section-title">
 						LinkedIn Post Generator
 					</h1>
-					<PostInputForm onSubmit={handleSubmit} isLoading={isLoading} />
-					{isLoading && (
-						<button
-							onClick={handleCancel}
-							className="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg shadow-md transition-all"
-						>
-							Cancel
-						</button>
-					)}
+					<div className="hidden md:flex items-center gap-2 text-xs sm:text-sm text-[color:var(--text-secondary)]">
+						<span>AI-powered</span>
+						<span aria-hidden>•</span>
+						<span>Mobile friendly</span>
+					</div>
 				</div>
+			</header>
 
-				{/* Right Panel */}
-				<div className="lg:col-span-2 space-y-8">
-					<div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-md border border-white/10">
-						<h2 className="text-xl font-semibold mb-3 text-cyan-300">
-							Generation Progress
-						</h2>
-						{isLoading && <Loader />}
-						<div className="space-y-3">
-							{events.map((ev, i) => (
-								<div
-									key={i}
-									className="p-3 bg-black/30 rounded-lg shadow-sm text-sm border border-white/10"
-								>
-									<div className="font-medium text-cyan-400">{ev.type}</div>
-									{ev.message && (
-										<div className="text-gray-300">{ev.message}</div>
-									)}
+			<main className="app-container">
+				<div className="grid grid-cols-1 xl:grid-cols-5 gap-6 lg:gap-8 py-6">
+					{/* Left Panel - Form */}
+					<div className="xl:col-span-2 sticky-panel">
+						<PostInputForm onSubmit={handleSubmit} isLoading={isLoading} />
+						{isLoading && (
+							<button
+								onClick={handleCancel}
+								className="btn-primary w-full mt-4"
+							>
+								Cancel
+							</button>
+						)}
+					</div>
+
+					{/* Right Panel - Results */}
+					<div className="xl:col-span-3 space-y-6 lg:space-y-8">
+						<div className="card p-5 sm:p-6">
+							<h2 className="text-lg sm:text-xl font-semibold mb-3 section-title">
+								Generation Progress
+							</h2>
+							{isLoading && (
+								<div className="mb-4">
+									<Loader />
 								</div>
-							))}
+							)}
+							<div className="space-y-3">
+								{events.map((ev, i) => (
+									<div
+										key={i}
+										className="p-3 rounded-lg border border-[color:var(--card-border)] bg-[color:rgba(0,0,0,0.25)]"
+									>
+										<div className="font-medium text-[color:var(--accent)]">
+											{ev.type}
+										</div>
+										{ev.message && (
+											<div className="text-[color:var(--text-secondary)]">
+												{ev.message}
+											</div>
+										)}
+									</div>
+								))}
+							</div>
 						</div>
-					</div>
 
-					<div>
-						<h2 className="text-xl font-semibold mb-3 text-cyan-300">
-							Generated Posts
-						</h2>
-						<div className="grid grid-cols-1 gap-6">
-							{posts.map((p, i) => (
-								<PostCard key={i} post={p} />
-							))}
+						<div>
+							<h2 className="text-lg sm:text-xl font-semibold mb-3 section-title">
+								Generated Posts
+							</h2>
+							<div className="grid grid-cols-1 gap-5 sm:gap-6">
+								{posts.map((p, i) => (
+									<PostCard key={i} post={p} />
+								))}
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
+			</main>
 		</div>
 	);
 }
