@@ -188,7 +188,10 @@ export const PostInputForm: React.FC<PostInputFormProps> = ({
 						htmlFor="emojiLevel"
 						className="block text-sm font-medium text-gray-200"
 					>
-						Emojis: <span className="font-semibold">{emojiLevelLabels[emojiLevel]}</span>
+						Emojis:{" "}
+						<span className="font-semibold">
+							{emojiLevelLabels[emojiLevel]}
+						</span>
 					</label>
 					<input
 						type="range"
