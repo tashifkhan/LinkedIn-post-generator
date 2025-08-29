@@ -2,15 +2,14 @@ import { useCallback, useState, useRef } from "react";
 import "./index.css";
 import { PostInputForm } from "./components/PostInputForm";
 import { PostCard } from "./components/PostCard";
-import { Loader } from "./components/Loader";
-import { Toast } from "./components/Toast";
 import type {
 	PostGenerationRequest,
 	GeneratedPost,
 	StreamingEvent,
 } from "./types";
 
-const BASE_URL = process.env.BACKEND_URL || "http://localhost:8000/api";
+const BASE_URL =
+	import.meta.env.VITE_BACKEND_URL || "http://localhost:8000/api";
 
 function App() {
 	const [isLoading, setIsLoading] = useState(false);
@@ -18,6 +17,7 @@ function App() {
 	const [posts, setPosts] = useState<GeneratedPost[]>([]);
 	const [toastMessage, setToastMessage] = useState("");
 	const [showToast, setShowToast] = useState(false);
+	const [isProgressExpanded, setIsProgressExpanded] = useState(true);
 	const abortRef = useRef<AbortController | null>(null);
 
 	const showToastMessage = useCallback((message: string) => {
@@ -37,6 +37,7 @@ function App() {
 		setEvents([]);
 		setPosts([]);
 		setIsLoading(true);
+		setIsProgressExpanded(true); // Expand progress when starting new generation
 
 		const controller = new AbortController();
 		abortRef.current = controller;
@@ -86,6 +87,7 @@ function App() {
 						}
 						if (parsed.type === "COMPLETE" || parsed.type === "ERROR") {
 							setIsLoading(false);
+							setIsProgressExpanded(false); // Auto-collapse when complete
 							controller.abort();
 							break;
 						}
@@ -149,30 +151,48 @@ function App() {
 					{/* Right Panel - Results */}
 					<div className="xl:col-span-3 space-y-6 lg:space-y-8">
 						<div className="card p-5 sm:p-6">
-							<h2 className="text-lg sm:text-xl font-semibold mb-3 section-title">
-								Generation Progress
-							</h2>
+							<div className="flex items-center justify-between mb-3">
+								<h2 className="text-lg sm:text-xl font-semibold section-title">
+									Generation Progress
+								</h2>
+								<button
+									onClick={() => setIsProgressExpanded(!isProgressExpanded)}
+									className="btn-secondary text-xs px-3 py-1"
+								>
+									{isProgressExpanded ? "Collapse" : "Expand"}
+								</button>
+							</div>
+
 							{isLoading && (
 								<div className="mb-4">
-									<Loader />
+									<div className="progress-bar"></div>
 								</div>
 							)}
-							<div className="space-y-3">
-								{events.map((ev, i) => (
-									<div
-										key={i}
-										className="p-3 rounded-lg border border-[color:var(--card-border)] bg-[color:rgba(0,0,0,0.25)]"
-									>
-										<div className="font-medium text-[color:var(--accent)]">
-											{ev.type}
-										</div>
-										{ev.message && (
-											<div className="text-[color:var(--text-secondary)]">
-												{ev.message}
+
+							<div
+								className={`overflow-hidden transition-all duration-300 ${
+									isProgressExpanded
+										? "max-h-96 opacity-100"
+										: "max-h-0 opacity-0"
+								}`}
+							>
+								<div className="space-y-3 pt-3">
+									{events.map((ev, i) => (
+										<div
+											key={i}
+											className="p-3 rounded-lg border border-[color:var(--card-border)] bg-[color:rgba(0,0,0,0.25)]"
+										>
+											<div className="font-medium text-[color:var(--accent)]">
+												{ev.type}
 											</div>
-										)}
-									</div>
-								))}
+											{ev.message && (
+												<div className="text-[color:var(--text-secondary)]">
+													{ev.message}
+												</div>
+											)}
+										</div>
+									))}
+								</div>
 							</div>
 						</div>
 
@@ -266,12 +286,19 @@ function App() {
 				</div>
 			</main>
 
-			<Toast
-				message={toastMessage}
-				isVisible={showToast}
-				onClose={() => setShowToast(false)}
-				type="success"
-			/>
+			{showToast && (
+				<div className="fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg bg-green-600 text-white max-w-sm">
+					<div className="flex items-center justify-between">
+						<span className="text-sm font-medium">{toastMessage}</span>
+						<button
+							onClick={() => setShowToast(false)}
+							className="ml-3 text-white hover:text-gray-200 text-lg leading-none"
+						>
+							×
+						</button>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

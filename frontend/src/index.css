@@ -119,9 +119,9 @@ border-radius: 999px;
 
 .progress-bar {
 position: relative;
-height: 8px;
+height: 6px;
 border-radius: 999px;
-background: rgba(255,255,255,0.08);
+background: rgba(255,255,255,0.1);
 overflow: hidden;
 border: 1px solid var(--card-border);
 }
@@ -133,13 +133,22 @@ left: -40%;
 top: 0;
 bottom: 0;
 width: 40%;
-background: var(--accent);
-animation: progressSlide 1s infinite;
+background: linear-gradient(90deg, var(--accent), var(--accent-2));
+animation: progressSlide 1.2s ease-in-out infinite;
 }
 
 @keyframes progressSlide {
-0% { left: -40%; }
-100% { left: 100%; }
+0% { 
+	left: -40%; 
+	opacity: 0.8;
+}
+50% {
+	opacity: 1;
+}
+100% { 
+	left: 100%; 
+	opacity: 0.8;
+}
 }
 
 .header-blur {
