@@ -1,0 +1,20 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+venv/
+.git
+.gitignore
+README.md
+uv.lock
+vercel.json
+
+# Byte-compiled / optimized / DLL files
+**/__pycache__/
+**/*.py[cod]
+
+# Tests and local files
+/tests
+**/.DS_Store
