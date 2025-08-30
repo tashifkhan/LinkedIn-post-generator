@@ -2,6 +2,7 @@ import { useCallback, useState, useRef } from "react";
 import "./index.css";
 import { PostInputForm } from "./components/PostInputForm";
 import { PostCard } from "./components/PostCard";
+import ImageGenerator from "./components/ImageGenerator";
 import type {
 	PostGenerationRequest,
 	GeneratedPost,
@@ -11,7 +12,10 @@ import type {
 const BASE_URL =
 	import.meta.env.VITE_BACKEND_URL || "http://localhost:8000/api";
 
+type TabType = "posts" | "images";
+
 function App() {
+	const [activeTab, setActiveTab] = useState<TabType>("posts");
 	const [isLoading, setIsLoading] = useState(false);
 	const [events, setEvents] = useState<StreamingEvent[]>([]);
 	const [posts, setPosts] = useState<GeneratedPost[]>([]);
@@ -118,12 +122,196 @@ function App() {
 		setIsLoading(false);
 	};
 
+	const renderTabContent = () => {
+		if (activeTab === "images") {
+			return <ImageGenerator />;
+		}
+
+		return (
+			<div className="grid grid-cols-1 xl:grid-cols-5 gap-6 lg:gap-8 py-6">
+				{/* Left Panel - Form */}
+				<div className="xl:col-span-2 sticky-panel">
+					<PostInputForm onSubmit={handleSubmit} isLoading={isLoading} />
+					{isLoading && (
+						<button onClick={handleCancel} className="btn-primary w-full mt-4">
+							Cancel
+						</button>
+					)}
+				</div>
+
+				{/* Right Panel - Results */}
+				<div className="xl:col-span-3 space-y-6 lg:space-y-8">
+					<div className="card p-5 sm:p-6">
+						<div className="flex items-center justify-between mb-3">
+							<h2 className="text-lg sm:text-xl font-semibold section-title">
+								Generation Progress
+							</h2>
+							<button
+								onClick={() => setIsProgressExpanded(!isProgressExpanded)}
+								className="btn-secondary text-xs px-3 py-1"
+							>
+								{isProgressExpanded ? "Collapse" : "Expand"}
+							</button>
+						</div>
+
+						{isLoading && (
+							<div className="mb-4">
+								<div className="progress-bar"></div>
+							</div>
+						)}
+
+						<div
+							className={`overflow-hidden transition-all duration-300 ${
+								isProgressExpanded
+									? "max-h-96 opacity-100"
+									: "max-h-0 opacity-0"
+							}`}
+						>
+							<div className="space-y-3 pt-3">
+								{events.map((ev, i) => (
+									<div
+										key={i}
+										className="p-3 rounded-lg border border-[color:var(--card-border)] bg-[color:rgba(0,0,0,0.25)]"
+									>
+										<div className="font-medium text-[color:var(--accent)]">
+											{ev.type}
+										</div>
+										{ev.message && (
+											<div className="text-[color:var(--text-secondary)]">
+												{ev.message}
+											</div>
+										)}
+									</div>
+								))}
+							</div>
+						</div>
+					</div>
+
+					{/* Final Output Summary */}
+					{posts.length > 0 && (
+						<div className="card p-5 sm:p-6">
+							<div className="flex items-center justify-between mb-4">
+								<h2 className="text-lg sm:text-xl font-semibold section-title">
+									Final Results ({posts.length} posts)
+								</h2>
+								<div className="flex gap-2">
+									<button
+										onClick={() => {
+											const stripMarkdown = (text: string) => {
+												if (!text) return text;
+												return text
+													.replace(/\*\*(.+?)\*\*/g, "$1") // Remove **bold**
+													.replace(/\*(.+?)\*/g, "$1") // Remove *italic*
+													.replace(/_(.+?)_/g, "$1") // Remove _italic_
+													.replace(/`(.+?)`/g, "$1") // Remove `code`
+													.replace(/#{1,6}\s*/g, "") // Remove headers
+													.replace(/\*+/g, "") // Remove remaining asterisks
+													.trim();
+											};
+
+											const cleanHashtag = (tag: string) => {
+												if (!tag) return tag;
+												return tag
+													.replace(/```json/g, "") // Remove ```json
+													.replace(/```/g, "") // Remove ```
+													.replace(/['"]/g, "") // Remove quotes
+													.replace(/[#]/g, "") // Remove # symbols
+													.replace(/\[|\]/g, "") // Remove brackets
+													.trim();
+											};
+
+											const allText = posts
+												.map(
+													(p, i) =>
+														`Post ${i + 1}:\n${stripMarkdown(
+															p.text
+														)}\n\nHashtags: ${
+															p.hashtags
+																?.map((h) => `#${cleanHashtag(h)}`)
+																.join(" ") || "None"
+														}\nCTA: ${stripMarkdown(
+															p.cta_suggestion || ""
+														)}\n\n---\n`
+												)
+												.join("\n");
+											navigator.clipboard.writeText(allText);
+											showToastMessage("All posts copied to clipboard!");
+										}}
+										className="btn-secondary text-sm"
+									>
+										Copy All
+									</button>
+									<button
+										onClick={() => {
+											const data = {
+												generated_at: new Date().toISOString(),
+												posts: posts,
+												total_posts: posts.length,
+											};
+											const blob = new Blob([JSON.stringify(data, null, 2)], {
+												type: "application/json",
+											});
+											const url = URL.createObjectURL(blob);
+											const a = document.createElement("a");
+											a.href = url;
+											a.download = `linkedin-posts-${
+												new Date().toISOString().split("T")[0]
+											}.json`;
+											a.click();
+											URL.revokeObjectURL(url);
+											showToastMessage("Posts exported as JSON!");
+										}}
+										className="btn-secondary text-sm"
+									>
+										Export JSON
+									</button>
+								</div>
+							</div>
+							<div className="text-sm text-[color:var(--text-secondary)] mb-4">
+								Generation completed successfully. {posts.length} unique posts
+								created.
+							</div>
+						</div>
+					)}
+
+					<div>
+						<h2 className="text-lg sm:text-xl font-semibold mb-3 section-title">
+							Generated Posts
+						</h2>
+						{posts.length === 0 && !isLoading && (
+							<div className="card p-8 text-center">
+								<div className="text-[color:var(--text-secondary)] mb-2">
+									No posts generated yet
+								</div>
+								<div className="text-sm text-[color:var(--text-secondary)]">
+									Fill out the form and click "Generate LinkedIn Posts" to get
+									started
+								</div>
+							</div>
+						)}
+						<div className="grid grid-cols-1 gap-5 sm:gap-6">
+							{posts.map((p, i) => (
+								<PostCard
+									key={i}
+									post={p}
+									onCopy={() =>
+										showToastMessage(`Post ${i + 1} copied to clipboard!`)
+									}
+								/>
+							))}
+						</div>
+					</div>
+				</div>
+			</div>
+		);
+	};
+
 	return (
 		<div className="min-h-screen">
 			<header className="header-blur sticky top-0 z-20">
 				<div className="app-container flex items-center justify-between py-3 sm:py-4">
 					<h1 className="text-lg sm:text-xl lg:text-2xl font-extrabold tracking-tight section-title">
-						LinkedIn Post Generator
+						AI Content Generator
 					</h1>
 					<div className="hidden md:flex items-center gap-2 text-xs sm:text-sm text-[color:var(--text-secondary)]">
 						<span>AI-powered</span>
@@ -133,186 +321,33 @@ function App() {
 				</div>
 			</header>
 
-			<main className="app-container">
-				<div className="grid grid-cols-1 xl:grid-cols-5 gap-6 lg:gap-8 py-6">
-					{/* Left Panel - Form */}
-					<div className="xl:col-span-2 sticky-panel">
-						<PostInputForm onSubmit={handleSubmit} isLoading={isLoading} />
-						{isLoading && (
-							<button
-								onClick={handleCancel}
-								className="btn-primary w-full mt-4"
-							>
-								Cancel
-							</button>
-						)}
-					</div>
-
-					{/* Right Panel - Results */}
-					<div className="xl:col-span-3 space-y-6 lg:space-y-8">
-						<div className="card p-5 sm:p-6">
-							<div className="flex items-center justify-between mb-3">
-								<h2 className="text-lg sm:text-xl font-semibold section-title">
-									Generation Progress
-								</h2>
-								<button
-									onClick={() => setIsProgressExpanded(!isProgressExpanded)}
-									className="btn-secondary text-xs px-3 py-1"
-								>
-									{isProgressExpanded ? "Collapse" : "Expand"}
-								</button>
-							</div>
-
-							{isLoading && (
-								<div className="mb-4">
-									<div className="progress-bar"></div>
-								</div>
-							)}
-
-							<div
-								className={`overflow-hidden transition-all duration-300 ${
-									isProgressExpanded
-										? "max-h-96 opacity-100"
-										: "max-h-0 opacity-0"
-								}`}
-							>
-								<div className="space-y-3 pt-3">
-									{events.map((ev, i) => (
-										<div
-											key={i}
-											className="p-3 rounded-lg border border-[color:var(--card-border)] bg-[color:rgba(0,0,0,0.25)]"
-										>
-											<div className="font-medium text-[color:var(--accent)]">
-												{ev.type}
-											</div>
-											{ev.message && (
-												<div className="text-[color:var(--text-secondary)]">
-													{ev.message}
-												</div>
-											)}
-										</div>
-									))}
-								</div>
-							</div>
-						</div>
-
-						{/* Final Output Summary */}
-						{posts.length > 0 && (
-							<div className="card p-5 sm:p-6">
-								<div className="flex items-center justify-between mb-4">
-									<h2 className="text-lg sm:text-xl font-semibold section-title">
-										Final Results ({posts.length} posts)
-									</h2>
-									<div className="flex gap-2">
-										<button
-											onClick={() => {
-												const stripMarkdown = (text: string) => {
-													if (!text) return text;
-													return text
-														.replace(/\*\*(.+?)\*\*/g, "$1") // Remove **bold**
-														.replace(/\*(.+?)\*/g, "$1") // Remove *italic*
-														.replace(/_(.+?)_/g, "$1") // Remove _italic_
-														.replace(/`(.+?)`/g, "$1") // Remove `code`
-														.replace(/#{1,6}\s*/g, "") // Remove headers
-														.replace(/\*+/g, "") // Remove remaining asterisks
-														.trim();
-												};
-
-												const cleanHashtag = (tag: string) => {
-													if (!tag) return tag;
-													return tag
-														.replace(/```json/g, "") // Remove ```json
-														.replace(/```/g, "") // Remove ```
-														.replace(/['"]/g, "") // Remove quotes
-														.replace(/[#]/g, "") // Remove # symbols
-														.replace(/\[|\]/g, "") // Remove brackets
-														.trim();
-												};
-
-												const allText = posts
-													.map(
-														(p, i) =>
-															`Post ${i + 1}:\n${stripMarkdown(
-																p.text
-															)}\n\nHashtags: ${
-																p.hashtags
-																	?.map((h) => `#${cleanHashtag(h)}`)
-																	.join(" ") || "None"
-															}\nCTA: ${stripMarkdown(
-																p.cta_suggestion || ""
-															)}\n\n---\n`
-													)
-													.join("\n");
-												navigator.clipboard.writeText(allText);
-												showToastMessage("All posts copied to clipboard!");
-											}}
-											className="btn-secondary text-sm"
-										>
-											Copy All
-										</button>
-										<button
-											onClick={() => {
-												const data = {
-													generated_at: new Date().toISOString(),
-													posts: posts,
-													total_posts: posts.length,
-												};
-												const blob = new Blob([JSON.stringify(data, null, 2)], {
-													type: "application/json",
-												});
-												const url = URL.createObjectURL(blob);
-												const a = document.createElement("a");
-												a.href = url;
-												a.download = `linkedin-posts-${
-													new Date().toISOString().split("T")[0]
-												}.json`;
-												a.click();
-												URL.revokeObjectURL(url);
-												showToastMessage("Posts exported as JSON!");
-											}}
-											className="btn-secondary text-sm"
-										>
-											Export JSON
-										</button>
-									</div>
-								</div>
-								<div className="text-sm text-[color:var(--text-secondary)] mb-4">
-									Generation completed successfully. {posts.length} unique posts
-									created.
-								</div>
-							</div>
-						)}
-
-						<div>
-							<h2 className="text-lg sm:text-xl font-semibold mb-3 section-title">
-								Generated Posts
-							</h2>
-							{posts.length === 0 && !isLoading && (
-								<div className="card p-8 text-center">
-									<div className="text-[color:var(--text-secondary)] mb-2">
-										No posts generated yet
-									</div>
-									<div className="text-sm text-[color:var(--text-secondary)]">
-										Fill out the form and click "Generate LinkedIn Posts" to get
-										started
-									</div>
-								</div>
-							)}
-							<div className="grid grid-cols-1 gap-5 sm:gap-6">
-								{posts.map((p, i) => (
-									<PostCard
-										key={i}
-										post={p}
-										onCopy={() =>
-											showToastMessage(`Post ${i + 1} copied to clipboard!`)
-										}
-									/>
-								))}
-							</div>
-						</div>
-					</div>
+			{/* Tab Navigation */}
+			<div className="app-container border-b border-[color:var(--card-border)]">
+				<div className="flex space-x-1">
+					<button
+						onClick={() => setActiveTab("posts")}
+						className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+							activeTab === "posts"
+								? "bg-[color:var(--accent)] text-white"
+								: "text-[color:var(--text-secondary)] hover:text-[color:var(--text-primary)] hover:bg-[color:rgba(0,0,0,0.1)]"
+						}`}
+					>
+						LinkedIn Posts
+					</button>
+					<button
+						onClick={() => setActiveTab("images")}
+						className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors ${
+							activeTab === "images"
+								? "bg-[color:var(--accent)] text-white"
+								: "text-[color:var(--text-secondary)] hover:text-[color:var(--text-primary)] hover:bg-[color:rgba(0,0,0,0.1)]"
+						}`}
+					>
+						Image Generator
+					</button>
 				</div>
-			</main>
+			</div>
+
+			<main className="app-container">{renderTabContent()}</main>
 
 			{showToast && (
 				<div className="fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg bg-green-600 text-white max-w-sm">
