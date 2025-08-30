@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+    image: linkedin-post-gen-backend:latest
+    env_file:
+      - .env
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_BACKEND_URL: "/api"
+    image: linkedin-post-gen-frontend:latest
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_BACKEND_URL=/api
+
+networks:
+  default:
+    name: linkedin-post-gen
