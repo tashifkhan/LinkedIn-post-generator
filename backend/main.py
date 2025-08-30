@@ -6,8 +6,9 @@ from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.models import PostGenerationRequest, StreamingEvent
+from app.models import PostGenerationRequest, StreamingEvent, ImageGenerationRequest, ImageGenerationResponse
 from app.agent import post_generator_agent
+from app.img_gen import generate_image
 
 app = FastAPI(title="LinkedIn Post Generator API")
 
@@ -23,6 +24,20 @@ app.add_middleware(
 @app.get("/health")
 async def health_check():
     return {"status": "ok", "timestamp": datetime.now().isoformat()}
+
+
+@app.post("/api/generate-image", response_model=ImageGenerationResponse)
+async def generate_image_endpoint(request: ImageGenerationRequest):
+    """
+    Generate an image based on the provided prompt using Google's Gemini API.
+    
+    Args:
+        request: ImageGenerationRequest containing the prompt and generation parameters
+        
+    Returns:
+        ImageGenerationResponse with the generated image data or error information
+    """
+    return await generate_image(request)
 
 
 @app.post("/api/generate-posts-stream", response_class=StreamingResponse)
