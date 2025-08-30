@@ -19,7 +19,7 @@ def create_llm_google_genai() -> Exception | ChatGoogleGenerativeAI:  # type: ig
     if ChatGoogleGenerativeAI is not None:
         try:
             return ChatGoogleGenerativeAI(
-                model="gemini-2.0-flash-lite",
+                model="gemini-2.5-flash",
                 temperature=0.7,
                 api_key=GOOGLE_API_KEY,
             )  # type: ignore
@@ -71,6 +71,7 @@ def clean_post_content(content: str) -> str:
     # Remove any remaining quotes around the entire content
     if result.startswith('"') and result.endswith('"'):
         result = result[1:-1]
+
     if result.startswith("'") and result.endswith("'"):
         result = result[1:-1]
 
@@ -442,7 +443,11 @@ def create_post_generator_graph():
             if state.get("should_search")
             else ("github_scrape" if state["request"].github_project_url else "draft")
         ),
-        {"search": "search", "github_scrape": "github_scrape", "draft": "draft"},
+        {
+            "search": "search",
+            "github_scrape": "github_scrape",
+            "draft": "draft",
+        },
     )
 
     workflow.add_conditional_edges(
