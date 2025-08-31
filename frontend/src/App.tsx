@@ -37,6 +37,14 @@ function App() {
 		setPosts((s) => [...s, p]);
 	}, []);
 
+	const updatePost = useCallback((index: number, updated: GeneratedPost) => {
+		setPosts((prev) => {
+			const copy = [...prev];
+			if (index >= 0 && index < copy.length) copy[index] = updated;
+			return copy;
+		});
+	}, []);
+
 	const handleSubmit = async (data: PostGenerationRequest) => {
 		setEvents([]);
 		setPosts([]);
@@ -297,6 +305,7 @@ function App() {
 									onCopy={() =>
 										showToastMessage(`Post ${i + 1} copied to clipboard!`)
 									}
+									onUpdate={(updated) => updatePost(i, updated)}
 								/>
 							))}
 						</div>
