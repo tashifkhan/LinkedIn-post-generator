@@ -30,6 +30,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 		setTimeout(() => setLocalToast(""), 2500);
 	}, []);
 
+	// Apply local save (no backend) — updates parent via onUpdate
 	const saveEdit = async () => {
 		setSaving(true);
 		try {
@@ -43,31 +44,60 @@ export const PostCard: React.FC<PostCardProps> = ({
 				cta_suggestion: editedCTA,
 			};
 
-			const res = await fetch(`${BASE_URL}/api/edit-post`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(payload),
-			});
-
-			if (!res.ok) {
-				const text = await res.text();
-				throw new Error(`Edit failed: ${res.status} ${text}`);
-			}
-
-			const updated: GeneratedPost = await res.json();
-			// update local fields
+			// Notify parent immediately (local edit)
+			onUpdate?.(payload);
 			setIsEditing(false);
-			showLocalToast("Post updated");
-			// notify parent if provided
-			typeof onUpdate === "function" && (onUpdate as any)(updated);
-			// update local displayed fields
-			setEditedText(updated.text);
-			setEditedHashtags((updated.hashtags || []).join(", "));
-			setEditedCTA(updated.cta_suggestion || "");
+			showLocalToast("Post updated locally");
+			setEditedText(payload.text);
+			setEditedHashtags((payload.hashtags || []).join(", "));
+			setEditedCTA(payload.cta_suggestion || "");
 		} catch (e: any) {
 			showLocalToast(e?.message || "Save failed");
 		} finally {
 			setSaving(false);
+		}
+	};
+
+	// Call backend LLM to edit the post according to an instruction
+	const [llmInstruction, setLlmInstruction] = useState("");
+	const [llmRunning, setLlmRunning] = useState(false);
+
+	const runLlmEdit = async () => {
+		if (!llmInstruction.trim()) return showLocalToast("Provide an instruction");
+		setLlmRunning(true);
+		try {
+			const res = await fetch(`${BASE_URL}/edit-post-llm`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					post: {
+						...post,
+						text: editedText,
+						hashtags: editedHashtags
+							.split(",")
+							.map((s) => s.trim())
+							.filter(Boolean),
+						cta_suggestion: editedCTA,
+					},
+					instruction: llmInstruction,
+				}),
+			});
+			if (!res.ok) {
+				const t = await res.text();
+				throw new Error(t || "LLM edit failed");
+			}
+			const updated: GeneratedPost = await res.json();
+			// apply updated result
+			onUpdate?.(updated);
+			setEditedText(updated.text);
+			setEditedHashtags((updated.hashtags || []).join(", "));
+			setEditedCTA(updated.cta_suggestion || "");
+			setIsEditing(false);
+			showLocalToast("LLM edit applied");
+		} catch (e: any) {
+			showLocalToast(e?.message || "LLM edit failed");
+		} finally {
+			setLlmRunning(false);
 		}
 	};
 	const stripMarkdown = (text: string) => {
@@ -196,6 +226,27 @@ export const PostCard: React.FC<PostCardProps> = ({
 							{localToast}
 						</div>
 					)}
+					{/* LLM Edit UI */}
+					<div className="mt-3">
+						<label className="text-sm text-[color:var(--text-secondary)]">
+							Edit with LLM
+						</label>
+						<div className="flex gap-2 mt-2">
+							<input
+								value={llmInstruction}
+								onChange={(e) => setLlmInstruction(e.target.value)}
+								placeholder="Instruction for LLM (e.g. make punchier, shorten)"
+								className="flex-1 p-2 rounded-md border border-[color:var(--card-border)]"
+							/>
+							<button
+								onClick={runLlmEdit}
+								disabled={llmRunning}
+								className="btn-secondary"
+							>
+								{llmRunning ? "Running…" : "Run"}
+							</button>
+						</div>
+					</div>
 				</div>
 			)}
 
