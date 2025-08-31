@@ -12,7 +12,7 @@ from app.models import (
     ImageGenerationRequest,
     ImageGenerationResponse,
 )
-from app.agent import post_generator_agent
+from app.agent import post_generator_agent, call_llm
 from app.img_gen import generate_image
 
 app = FastAPI(title="LinkedIn Post Generator API")
@@ -134,7 +134,33 @@ async def generate_linkedin_posts_stream(request: PostGenerationRequest):
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
+@app.post("/api/edit-post-llm", response_model=dict)
+async def edit_post_llm(payload: dict):
+    """
+    Use the LLM to edit a post according to an instruction.
+    Expected payload: { post: {...}, instruction: "Make it shorter" }
+    Returns the updated post dict.
+    """
+    try:
+        post = payload.get("post") or {}
+        instruction = payload.get("instruction", "")
+        if not post or not instruction:
+            return post
+
+        prompt = f"You are an assistant that edits LinkedIn posts. Instruction: {instruction}\nPost:\n{post.get('text','')}\nReturn only the edited post text."
+        edited = await call_llm(prompt)
+        if not edited:
+            return post
+
+        # return modified structure
+        post["text"] = edited.strip()
+        return post
+    except Exception:
+        return payload.get("post") or {}
+
+
 if __name__ == "__main__":
+    print("[Check]")
     import uvicorn
 
     uvicorn.run(
