@@ -1,13 +1,75 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import type { GeneratedPost } from "../types";
 import { motion } from "framer-motion";
 
 interface PostCardProps {
 	post: GeneratedPost;
 	onCopy?: () => void;
+	onUpdate?: (p: GeneratedPost) => void;
 }
 
-export const PostCard: React.FC<PostCardProps> = ({ post, onCopy }) => {
+export const PostCard: React.FC<PostCardProps> = ({
+	post,
+	onCopy,
+	onUpdate,
+}) => {
+	const BASE_URL =
+		import.meta.env.VITE_BACKEND_URL || "http://localhost:8000/api";
+
+	const [isEditing, setIsEditing] = useState(false);
+	const [editedText, setEditedText] = useState(post.text);
+	const [editedHashtags, setEditedHashtags] = useState(
+		(post.hashtags || []).join(", ")
+	);
+	const [editedCTA, setEditedCTA] = useState(post.cta_suggestion || "");
+	const [saving, setSaving] = useState(false);
+	const [localToast, setLocalToast] = useState("");
+
+	const showLocalToast = useCallback((msg: string) => {
+		setLocalToast(msg);
+		setTimeout(() => setLocalToast(""), 2500);
+	}, []);
+
+	const saveEdit = async () => {
+		setSaving(true);
+		try {
+			const payload: GeneratedPost = {
+				...post,
+				text: editedText,
+				hashtags: editedHashtags
+					.split(",")
+					.map((s) => s.trim())
+					.filter(Boolean),
+				cta_suggestion: editedCTA,
+			};
+
+			const res = await fetch(`${BASE_URL}/api/edit-post`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(payload),
+			});
+
+			if (!res.ok) {
+				const text = await res.text();
+				throw new Error(`Edit failed: ${res.status} ${text}`);
+			}
+
+			const updated: GeneratedPost = await res.json();
+			// update local fields
+			setIsEditing(false);
+			showLocalToast("Post updated");
+			// notify parent if provided
+			typeof onUpdate === "function" && (onUpdate as any)(updated);
+			// update local displayed fields
+			setEditedText(updated.text);
+			setEditedHashtags((updated.hashtags || []).join(", "));
+			setEditedCTA(updated.cta_suggestion || "");
+		} catch (e: any) {
+			showLocalToast(e?.message || "Save failed");
+		} finally {
+			setSaving(false);
+		}
+	};
 	const stripMarkdown = (text: string) => {
 		if (!text) return text;
 		return text
@@ -49,26 +111,93 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onCopy }) => {
 			{/* Accent Bar */}
 			<div className="absolute top-0 left-0 w-full h-1 rounded-t-[16px] bg-[color:var(--accent)]"></div>
 
-			{/* Header with Project Title and Copy Button */}
+			{/* Header with Project Title, Copy and Edit Buttons */}
 			<div className="flex items-start justify-between mb-3">
 				{post.github_project_name && (
 					<h3 className="text-xl sm:text-2xl font-bold text-[color:var(--accent)]">
 						{post.github_project_name}
 					</h3>
 				)}
-				<button
-					onClick={copyToClipboard}
-					className="btn-secondary text-xs px-3 py-1 ml-auto"
-					title="Copy post to clipboard"
-				>
-					Copy
-				</button>
+				<div className="flex gap-2 ml-auto">
+					<button
+						onClick={copyToClipboard}
+						className="btn-secondary text-xs px-3 py-1"
+						title="Copy post to clipboard"
+					>
+						Copy
+					</button>
+					{!isEditing ? (
+						<button
+							onClick={() => setIsEditing(true)}
+							className="btn-secondary text-xs px-3 py-1"
+						>
+							Edit
+						</button>
+					) : (
+						<button
+							onClick={() => {
+								setIsEditing(false);
+								setEditedText(post.text);
+								setEditedHashtags((post.hashtags || []).join(", "));
+								setEditedCTA(post.cta_suggestion || "");
+							}}
+							className="btn-secondary text-xs px-3 py-1"
+						>
+							Cancel
+						</button>
+					)}
+				</div>
 			</div>
 
-			{/* Post Text */}
-			<p className="text-[color:var(--text-primary)] text-base sm:text-lg leading-relaxed whitespace-pre-wrap mb-4">
-				{stripMarkdown(post.text)}
-			</p>
+			{/* Post Text or Edit Form */}
+			{!isEditing ? (
+				<p className="text-[color:var(--text-primary)] text-base sm:text-lg leading-relaxed whitespace-pre-wrap mb-4">
+					{stripMarkdown(editedText || post.text)}
+				</p>
+			) : (
+				<div className="mb-4">
+					<textarea
+						value={editedText}
+						onChange={(e) => setEditedText(e.target.value)}
+						rows={6}
+						className="w-full p-3 rounded-md border border-[color:var(--card-border)] bg-[color:var(--bg-subtle)]"
+					/>
+					<input
+						value={editedHashtags}
+						onChange={(e) => setEditedHashtags(e.target.value)}
+						className="w-full mt-2 p-2 rounded-md border border-[color:var(--card-border)]"
+						placeholder="comma-separated hashtags"
+					/>
+					<input
+						value={editedCTA}
+						onChange={(e) => setEditedCTA(e.target.value)}
+						className="w-full mt-2 p-2 rounded-md border border-[color:var(--card-border)]"
+						placeholder="CTA suggestion"
+					/>
+					<div className="flex gap-2 mt-2">
+						<button
+							onClick={saveEdit}
+							disabled={saving}
+							className="btn-primary text-sm"
+						>
+							{saving ? "Saving..." : "Save"}
+						</button>
+						<button
+							onClick={() => {
+								setIsEditing(false);
+							}}
+							className="btn-secondary text-sm"
+						>
+							Close
+						</button>
+					</div>
+					{localToast && (
+						<div className="text-sm text-[color:var(--text-secondary)] mt-2">
+							{localToast}
+						</div>
+					)}
+				</div>
+			)}
 
 			{/* Hashtags */}
 			{post.hashtags && post.hashtags.length > 0 && (
